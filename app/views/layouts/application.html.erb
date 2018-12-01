@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <%# 各ビューのprovideメソッドで:titleを定義し、レイアウトのyieldメソッドで取得します %>
     <title><%= full_title(yield(:title)) %></title>
     <%= csrf_meta_tags %>
 
@@ -14,8 +15,13 @@
   <body>
     <%= render 'layouts/header' %>
     <div class="container">
+      <% flash.each do |message_type, message| %>
+        <%# content_tagは第１引数がタグ、第２引数がタグの内容、第３引数がclassなどのオプション %>
+        <%= content_tag(:div, message, class: "alert alert-#{message_type}") %>
+      <% end %>
       <%= yield %>
       <%= render 'layouts/footer' %>
+      <%= debug(params) if Rails.env.development? %>
     </div>
   </body>
 </html>
