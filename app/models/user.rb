@@ -8,8 +8,8 @@ class User < ApplicationRecord
   validates :email, presence: true, length: { maximum: 255 },
                     format: { with: VALID_EMAIL_REGEX },
                     uniqueness: { case_sensitive: false } # 細かい違いを無視し、大文字も小文字も同じものとして扱う
-  has_secure_password
-  validates :password, presence: true, length: { minimum: 6 }
+  has_secure_password # has_secure_passwordメソッドは存在性のバリデーションもするが、これは新しくレコードが追加されたときだけに適用される性質を持っている
+  validates :password, presence: true, length: { minimum: 6 }, allow_nil: true
 
   # 渡された文字列のハッシュ値を返す
   def User.digest(string)

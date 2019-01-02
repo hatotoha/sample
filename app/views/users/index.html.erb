@@ -1,0 +1,18 @@
+<% provide(:title, 'All users') %>
+<h1>All users</h1>
+
+<%= will_paginate %>
+<ul class="users">
+  <% @users.each do |user| %>
+    <%# renderをパーシャル (ファイル名の文字列) に対してではなく、Userクラスのuser変数に対して実行すると %>
+    <%# Railsは自動的に_user.html.erbという名前のパーシャルを探しにいく %>
+    <%= render user %>
+  <% end %>
+</ul>
+<%# 以下の記述の場合、Railsは@usersをUserオブジェクトのリストであると推測します。 %>
+<%# さらに、ユーザーのコレクションを与えて呼び出すと、Railsは自動的にユーザーのコレクションを列挙し、 %>
+<%# それぞれのユーザーを_user.html.erbパーシャルで出力します。 %>
+<%# <ul class="users"> %>
+  <%# <%= render @users %>
+<%# </ul> %>
+<%= will_paginate %>
