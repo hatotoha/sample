@@ -5,12 +5,16 @@ class UsersController < ApplicationController
 
   def index
     # @users = User.all
-    @users = User.paginate(page: params[:page])
+    @users = User.where(activated: true).paginate(page: params[:page])
   end
 
   def show
     # params[:id]は文字列型の "1" ですが、findメソッドでは自動的に整数型に変換されます
     @user = User.find(params[:id])
+    unless @user.activated == true
+      redirect_to root_url
+      return # redirect_toでは処理は終わらないので、明示的にreturnする必要がある
+    end
   end
 
   def new
@@ -20,9 +24,12 @@ class UsersController < ApplicationController
   def create
     @user = User.new(user_params)
     if @user.save
-      log_in @user
-      flash[:success] = "Welcome to the Sample App!"
-      redirect_to @user
+      # log_in @user
+      # flash[:success] = "Welcome to the Sample App!"
+      # redirect_to @user
+      @user.send_activation_email
+      flash[:info] = "Please check your email to activate your account."
+      redirect_to root_url
     else
       render 'new'
     end

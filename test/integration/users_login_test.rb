@@ -63,6 +63,9 @@ class UsersLoginTest < ActionDispatch::IntegrationTest
 
   test "login with remembering" do
     log_in_as(@user, remember_me: '1')
+    # assignsメソッドは、コントローラーのインスタンス変数をテストするメソッドです。
+    # 引数にインスタンス変数をシンボル型で渡します。
+    # この場合、sessions#create内で@user変数を定義しておく必要があります。user（ローカル変数）ではダメ
     assert_equal cookies[:remember_token], assigns(:user).remember_token
     # assert_not_empty cookies['remember_token']
   end
