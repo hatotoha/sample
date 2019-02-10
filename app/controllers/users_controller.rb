@@ -11,6 +11,7 @@ class UsersController < ApplicationController
   def show
     # params[:id]は文字列型の "1" ですが、findメソッドでは自動的に整数型に変換されます
     @user = User.find(params[:id])
+    @microposts = @user.microposts.paginate(page: params[:page])
     unless @user.activated == true
       redirect_to root_url
       return # redirect_toでは処理は終わらないので、明示的にreturnする必要がある
@@ -60,15 +61,6 @@ class UsersController < ApplicationController
   end
 
   # beforeアクション
-
-  # ログイン済みユーザーかどうか確認
-  def logged_in_user
-    unless logged_in?
-      store_location
-      flash[:danger] = "Please log in."
-      redirect_to login_url
-    end
-  end
 
   # 正しいユーザーかどうか確認
   def correct_user

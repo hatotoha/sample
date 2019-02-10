@@ -17,7 +17,7 @@
     <div class="container">
       <% flash.each do |message_type, message| %>
         <%# content_tagは第１引数がタグ、第２引数がタグの内容、第３引数がclassなどのオプション %>
-        <%= content_tag(:div, message, class: "alert alert-#{message_type}") %>
+        <%= content_tag(:div, message.html_safe, class: "alert alert-#{message_type}") %>
       <% end %>
       <%= yield %>
       <%= render 'layouts/footer' %>

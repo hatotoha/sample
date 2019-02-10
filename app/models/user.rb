@@ -1,5 +1,6 @@
 class User < ApplicationRecord
   attr_accessor :remember_me, :remember_token, :activation_token, :reset_token
+  has_many :microposts, dependent: :destroy
   before_save   :downcase_email
   before_create :create_activation_digest
   validates :name, presence: true, length: { maximum: 50 }
@@ -34,7 +35,7 @@ class User < ApplicationRecord
   # 渡されたトークンがダイジェストと一致したらtrueを返す
   def authenticated?(attribute, token)
     # sendメソッドは、引数として与えられたメソッドを実行するためのメソッド
-    # 引数を動的に変更することにより、実行するメソッドを動的に変更できる
+    # authenticated?メソッドの引数を動的に変更することにより、実行するメソッドを動的に変更できる
     digest = self.send("#{attribute}_digest")
     return false if digest.nil?
     BCrypt::Password.new(digest).is_password?(token)
@@ -69,6 +70,12 @@ class User < ApplicationRecord
   # パスワード再設定の期限が切れている場合はtrueを返す
   def password_reset_expired?
     reset_sent_at < 2.hours.ago
+  end
+
+  # 試作feedの定義
+  # 完全な実装は次章の「ユーザーをフォローする」を参照
+  def feed
+    Micropost.where("user_id = ?", id)
   end
 
   private
