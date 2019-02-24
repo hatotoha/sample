@@ -1,6 +1,27 @@
 class User < ApplicationRecord
   attr_accessor :remember_me, :remember_token, :activation_token, :reset_token
+
   has_many :microposts, dependent: :destroy
+  # userは多くのactive_relationshipを持つ
+  # active_relationshipの元はrelationshipモデルで、userとはfollower_idで紐づく
+  has_many :active_relationships,  class_name:  "Relationship",
+                                   foreign_key: "follower_id",
+                                   dependent:   :destroy
+  # userは多くのpassive_relationshipsを持つ
+  # passive_relationshipsの元はrelationshipモデルで、userモデルとはfollowed_idで紐づく
+  has_many :passive_relationships, class_name:  "Relationship",
+                                   foreign_key: "followed_id",
+                                   dependent:   :destroy
+  # userはactive_relationshipを介し、多くのfollowingを持つ
+  # active_relationshipと紐づくので、この場合のuserとはfollower（フォローしている側）
+  # つまり以下のfollowingsは、ユーザーがフォローしている人たち（followings）を示す
+  # なお、followingsというのはfollowedモデルの別名
+  has_many :followings, through: :active_relationships, source: :followed
+  # userはpassive_relationshipsを介し、多くのfollowerを持つ
+  # passive_relationshipsと紐づくので、この場合のuserとはfollowed（フォローされる側）
+  # つまり以下のfollowersは、ユーザーをフォローしている人たち（followers）を示す
+  has_many :followers, through: :passive_relationships, source: :follower
+
   before_save   :downcase_email
   before_create :create_activation_digest
   validates :name, presence: true, length: { maximum: 50 }
@@ -72,10 +93,26 @@ class User < ApplicationRecord
     reset_sent_at < 2.hours.ago
   end
 
-  # 試作feedの定義
-  # 完全な実装は次章の「ユーザーをフォローする」を参照
+  # ユーザーのステータスフィードを返す
   def feed
-    Micropost.where("user_id = ?", id)
+    following_ids = "SELECT followed_id FROM relationships WHERE follower_id = :user_id"
+    Micropost.where("user_id IN (#{following_ids}) OR user_id = :user_id", user_id: id)
+  end
+
+  # ユーザーをフォローする
+  def follow(other_user)
+    self.followings << other_user
+  end
+
+  # ユーザーをフォロー解除する
+  def unfollow(other_user)
+    # selfは必要ないが、無いとなぜfollowed_idだけでレコードを一意に特定できるのか分からないので明示する
+    self.active_relationships.find_by(followed_id: other_user.id).destroy
+  end
+
+  # 現在のユーザーがフォローしてたらtrueを返す
+  def following?(other_user)
+    self.followings.include?(other_user)
   end
 
   private
